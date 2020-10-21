@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <context:property-placeholder location="classpath:db.properties" />
+
+    <bean id="ds" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="url" value="${url}"/>
+        <property name="driverClassName" value="${driver}"/>
+        <property name="username" value="${user}"/>
+        <property name="password" value="${pass}"/>
+    </bean>
+    <bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sf">
+        <!--设置包的别名-->
+        <property name="typeAliasesPackage" value="com.qf.pojo" />
+
+        <!--mapperLocations映射文件的位置-->
+        <property name="mapperLocations" value="classpath:com/qf/dao/*Mapper.xml" />
+        <property name="dataSource" ref="ds" />
+        <!--额外任何关于mybatis的配置都可以在该文件中进行单独的配置-->
+        <property name="configLocation" value="classpath:mybatis-config.xml" />
+    </bean>
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.qf.dao"/>
+        <property name="sqlSessionFactoryBeanName" value="sf"/>
+    </bean>
+    <bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager" id="dtx">
+        <property name="dataSource" ref="ds" />
+    </bean>
+    <tx:advice transaction-manager="dtx" id="tx">
+        <tx:attributes>
+            <tx:method name="save*" propagation="REQUIRED" isolation="DEFAULT" rollback-for="Exception"/>
+            <tx:method name="insert*" propagation="REQUIRED" isolation="DEFAULT" rollback-for="Exception"/>
+            <tx:method name="update*" propagation="REQUIRED" isolation="DEFAULT" rollback-for="Exception"/>
+            <tx:method name="detele*" propagation="REQUIRED" isolation="DEFAULT" rollback-for="Exception"/>
+        </tx:attributes>
+    </tx:advice>
+    <aop:config>
+        <aop:pointcut id="mpt" expression="execution(* com.qf.service.*.*(..))"/>
+        <aop:advisor advice-ref="tx" pointcut-ref="mpt"/>
+    </aop:config>
+<!--    &lt;!&ndash;-->
+<!--       引入数据库的配置文件信息-->
+<!--    &ndash;&gt;-->
+<!--    <context:property-placeholder location="classpath:db.properties" />-->
+
+<!--    &lt;!&ndash;-->
+<!--        设置druid数据源-->
+<!--    &ndash;&gt;-->
+<!--    <bean id="ds" class="com.alibaba.druid.pool.DruidDataSource">-->
+<!--        <property name="url" value="${url}" />-->
+<!--        <property name="driverClassName" value="${driver}" />-->
+<!--        <property name="username" value="${user}" />-->
+<!--        <property name="password" value="${pass}" />-->
+<!--    </bean>-->
+
+<!--    &lt;!&ndash;-->
+<!--        SqlSessionFactoryBean，将mybatis交给spring来管理-->
+<!--    &ndash;&gt;-->
+<!--    <bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sf">-->
+<!--        &lt;!&ndash;设置包的别名&ndash;&gt;-->
+<!--        <property name="typeAliasesPackage" value="com.qf.pojo" />-->
+
+<!--        &lt;!&ndash;mapperLocations映射文件的位置&ndash;&gt;-->
+<!--        <property name="mapperLocations" value="classpath:com/qf/dao/*Mapper.xml" />-->
+<!--        <property name="dataSource" ref="ds" />-->
+<!--        &lt;!&ndash;额外任何关于mybatis的配置都可以在该文件中进行单独的配置&ndash;&gt;-->
+<!--        <property name="configLocation" value="classpath:mybatis-config.xml" />-->
+<!--    </bean>-->
+
+<!--    &lt;!&ndash;-->
+<!--        MapperScannerConfigurer配置映射扫描配置，分别设置SqlSessionFactoryBean的name以及basePackage对于dao包进行扫描-->
+<!--    &ndash;&gt;-->
+<!--    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">-->
+<!--        <property name="basePackage" value="com.qf.dao" />-->
+<!--        <property name="sqlSessionFactoryBeanName" value="sf" />-->
+<!--    </bean>-->
+
+<!--    &lt;!&ndash;-->
+<!--        DataSourceTransactionManager配置数据源的事务管理器-->
+<!--    &ndash;&gt;-->
+<!--    <bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager" id="dtx">-->
+<!--        <property name="dataSource" ref="ds" />-->
+<!--    </bean>-->
+
+<!--    &lt;!&ndash;-->
+<!--        声明式事务的配置-->
+<!--            设置事务的隔离级别以及出问题之后的处理方式-->
+<!--    &ndash;&gt;-->
+<!--    <tx:advice transaction-manager="dtx" id="tx">-->
+<!--        <tx:attributes>-->
+<!--            <tx:method name="save*" propagation="REQUIRED" isolation="DEFAULT" rollback-for="Exception" />-->
+<!--            <tx:method name="insert*" propagation="REQUIRED" isolation="DEFAULT" rollback-for="Exception" />-->
+<!--            <tx:method name="update*" propagation="REQUIRED" isolation="DEFAULT" rollback-for="Exception" />-->
+<!--            <tx:method name="delete*" propagation="REQUIRED" isolation="DEFAULT" rollback-for="Exception" />-->
+<!--        </tx:attributes>-->
+<!--    </tx:advice>-->
+
+<!--    &lt;!&ndash;aop：config设置aop的配置&ndash;&gt;-->
+<!--    <aop:config>-->
+<!--        <aop:pointcut id="mpt" expression="execution(* com.qf.service.*.*(..))" />-->
+<!--        <aop:advisor advice-ref="tx" pointcut-ref="mpt" />-->
+<!--    </aop:config>-->
+</beans>
